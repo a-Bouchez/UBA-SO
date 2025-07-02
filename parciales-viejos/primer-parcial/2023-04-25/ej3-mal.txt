@@ -1,0 +1,77 @@
+lobos y cabras en el cruce de un río. 
+bote de 4 animales.
+No pueden haber 3 lobos y 1 cabra o 1 lobo y 3 cabras. 
+cuado todos abordan() uno solo toma los remos y rema().
+modelar el lobo y la cabra.
+
+primero vamos a necesitar contadores:
+    - uno total global para no llenar el bote.
+    - un contador por especie de animal para asegurarnos que no hayan combinaciones invalidas.
+
+obviamente semáforos:
+    - uno para subirse el bote inicializado en 1.
+    - otro que los haga esperar hasta que se suban todos y vean quien rema.
+        ° inicializado en 0 y que lo prenda el último en subirse
+    - un sem para indicar que llegamos a la costa
+    - luego de que bajen los 4, el último avisa que se puede volver a usar el barco.
+
+sem abordar = sema_init(1)
+sem estamosTodos = sema_init(0)
+sem nos_bajamos = sema_init(0)
+sem llegamos = sema_init(0)
+
+int<atomic> cant_animales = 0;
+int<atomic> cant_lobos = 0;
+int<atomic> cant_cabras = 0;
+int<atomic> ya_remamos = 0;
+
+void lobo() {
+    abordar.wait()
+
+    if(cant_animales == 4) {
+        abordar.signal()
+        return
+    }
+
+    if(cant_lobos == 2 && cant_cabras == 1){
+        abordar.signal()
+        return
+    }
+
+    if(cant_cabras == 3) {
+        abordar.signal()
+        return
+    }
+
+    // si llego acá es porque peude subirse
+    cant_lobos.inc()
+    cant_animales.inc()
+    abordar.signal()
+
+    if(cant_animales == 4){
+        for i in range(4){
+            estamosTodos.signal()
+        }
+    }
+
+    estamosTodos.wait()
+    if(!ya_remamos){
+        remar()
+        ya_remamos.inc()
+        for i in range(4) {
+            llegamos.signal()
+        }
+    }
+
+    llegamos.wait()
+    cant_lobos.dec()
+    cant_animales.dec()
+    if (cant_animales == 0) {
+        for i in range(4)
+            nos_bajamos.signal()
+    }
+    nos_bajamos.wait()
+    abordar.signal()
+}
+
+para el orto. 

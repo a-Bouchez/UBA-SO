@@ -1,0 +1,45 @@
+a) cuales sacan cada algoritmo?
+
+FIFO --> nuestro stack de desalojo va a ser <3,0,2,1>  --> así que se va la número 3
+
+LRU --> stack de desalojo <1,2,0,3> --> se vá la 1
+
+SC --> stack <3*,0*,2,1> --> sacamos escudo <0*,2,1,3> --> sacamos escudo <2,1,3,0> --> se va la 2
+
+b) 
+i. Si tenemos 4 marcos de p´agina y m´as de 6 pedidos de p´agina, para cualquier orden que nos llegue, Second Chance siempre es mejor que LRU
+
+    SIempre es medio fuerete busquemos una seq no cumpla, tenemos páginas 0,1,2,3,4  y tenemos 4 pages frames
+
+    hacemos 0,1,2,3
+
+        LRU <0,1,2,3>
+        SC <0,1,2,3>
+    
+    hacemos 1
+        LRU <2,3,1,4>
+        SC <1*,2,3,4>
+        LRU <0,2,3,1>
+        SC <0,1*,2,3>
+
+    hacemos 4
+
+        LRU <2,3,1,4>
+        SC <1*,2,3,4>
+
+    hacemos 0
+
+        LRU <3,1,4,0>
+        SC <3,4,1,0>
+
+    hacemos 2,3
+
+        LRU <4,0,2,3>
+        SC  <1,0,2,3>
+
+    si hacemos 1 tenemos un hit con SC y un miss con LRU y si hacemos un 4 tenemos un hit con LRU y un miss con SC.
+
+    seq --> 0,1,2,3,1,4,0,2,3,4   
+
+
+    

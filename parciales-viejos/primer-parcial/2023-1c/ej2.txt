@@ -1,0 +1,26 @@
+Central nuclear con varios procesos
+    - Funcionamiento de aspectos esenciales del reactor (presión del agua y temperatura).
+    - Activar alarma si hay algo raro 
+    - graficar los datos en TODO momento 
+    - modificación de los graficos en todo momento
+    - exportación de datos acumulados por día, semana y mes
+
+Res:
+    usamos una MLQ que va a tener 4 colas
+
+        - cola0: La de mayor prioridad, se encarga de prender las alarmas. Como solo prende alarmas usamos FCFS
+        - cola1: Funcionamiento de aspectos esenciales. No quiero que se me rompa todo, es lo segundo más importante que tengo que hacer. Como no sé 
+                 cuanto puede tardar cada tarea y si tienen o no un deadline usamos RR con un quantum lo suficientemente grande para que el cambio de 
+                 contexto no sea lo más costoso y lo suficientemente chico como para que no se vuelva un FCFS. Quiero uso equitativo del CPU para estas
+                 tareas. 
+        - Cola2: graficar y modificar los gráficos. igual al anterior, quiero RR por las mismas cosas. 
+        - Cola3: logs, no quiero que molesten así qeu los dejamos como lo de menos prioridad. FCFS
+
+    Hay aging? NO, no quiero aging. Si me sube un log hasta la cola0 me toma de rehén el CPU y estoy en problemas. Voy a aceptar starvation de los 
+    procesos menos importantes ya que quiero mantener la prioridad absoluta entre las colas. 
+
+    Qué pasa si estoy ejecutando un LOG y me llega una alarma? Vamos a querer que se interrumpa el cualquier acción en caso de una alarma o, mejor
+    dicho, en caso de que llegue algo de mayor prioridad por lo que va a ser preemtive.
+
+    Qué pasa si me sacaron el CPU por una interrupción? si es un FCFS lo dejamos al principio de la cola, si es un RR lo dejamos al principio de la 
+    cola pero con su quantum reiniciado como premio.

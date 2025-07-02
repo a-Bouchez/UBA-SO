@@ -1,0 +1,34 @@
+Tareas RT e interactivas, las RT necesitamos que sean de ejecucicon rapida y las interctivas debemos tener un uso justo del cpu para que sean 
+interactivas como tal y se ejecuten.
+
+Vamos a usar una MLQ donde la cola de prioridad 0 va a ser para las tareas RT.  Por qué mlq? queremos prioridad absiluta para hacer tareas RT y podemos
+hacer eso poniendolas en la cola de lvl 0 y ademas sabemos que las intereactivas pueden pertenecer a una de K prioridades dependiendo de su uso del cpu
+por lo que podemos hacer K+1 listas donde la 0 es para las RT y el resto para las intereactivas.
+
+Normalmente para este tipo de tarea se peude hacer distintos algoritmos de scheduling, Si tuvieran y/o supieramos sus deadlines se pude hacer un EDF para 
+asegurarnos de hacer las más críticas. Como no se dice nada se puede asumir que es soft y que si perdemos un deadline no pasa nada. 
+
+Otra algoritmo para la cola de prioridad 0, el que voy a usar, es FCFS ya que no nos dicen mucho de estas tareas y sabemos que son poco intensas
+en uso del CPU y muy intensas en uso de E/S así que tendríamos que poner un quantum muy chicho que nos puede llegar a perder mas tiempo haciendo
+los context switches que el uso del CPU por tarea. o un quantum muy grande y que se comporte como un FCFS. ( este último no está mal tampoco).
+
+las otras k colas son las que vamos a usar para las tareas interactivas, vamos a proponer el uso de RR en todas ellas pero con un quantum cada vez 
+más grande cuando se baja de prioridad. La idea va a ser siempre poner primero a todas estas tareass en la cola 1 y a medida que no cumplan los quantums
+bajarlas o subirlas (hasta la 1) si cumplen con los quantums. 
+
+No nos dicen nada de si puede haber o no starvation pero al ser tareas intercativas vamos a querer que reaccionen y no quedarnos esperando hasta que nos
+puedan responder por lo que vamos a poner starvation. De esta manera si no nos paran de llegar tareas a la cola 1 el resto van a ir subiendo hasta
+ejecutarse un queantum y volver a bajar su prioriodad. 
+
+Volviendo a la cola de nivel 0 no queremos que suban tareas interactivas ahí porque si estamos usando un FCFS si llegan a subir nos pueden 
+generar un caso de embotellamineto (Tiene otro nombre que no me aucerdo pero la imagen del camión tapando los autitos) (convoy effect). 
+
+Además, qué pasa si nos llega una tarea de prioridad 0 y estamos ejecutando algo de una prioridad menos? vamos a permitir la interrupción del CPU en esos 
+casos para que siempre tengan prioridad las tareas RT sobre el resto. Cuando termine la ejecución de esa tarea volvemos a la desalojada pero con su 
+quantum reseteado para no complicarnos en guardar cuanto gastó o el caso de volver a esta tarea y que se termine su quantum al toque.(preemtive)
+
+Nos piden cota para el peor caso de response time de las tareas RT. Supongamos t tarea RT que llega a la cola, como la cola es FCFS supongamos que k es 
+el mayor tiempo de ejecución. vamos a tener KxCant_tareas > tiempos(t) de cota superior. Es decir, el tiempo de todas las tareas RT que estaban antes
+de que llegara T.
+
+Si tuvieramos un RR con quantums grandes para que sea una FCFS nos queda que la cota superior es quantumXcant_tareas hasta que llegue el quantum de t.
