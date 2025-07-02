@@ -15,7 +15,7 @@ Quiero agradecer especialmente a las siguientes personas por su ayuda, correccio
 - [Honi, al que le debo todo](https://github.com/honi)
 - [Cuarto integrante misterioso]
 
-Los primeros 4 son repos con resueltos de esta materia por si quiren ver otros.
+Los primeros 4 son repos con resueltos de esta materia por si quieren ver otros.
 
 ---
 
