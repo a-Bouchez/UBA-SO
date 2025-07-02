@@ -15,7 +15,7 @@ Quiero agradecer especialmente a las siguientes personas por su ayuda, correccio
 
 ---
 
-##Nota
+## Nota
 
 Recuerden que soy alumno y bastante bobo, así que es muy normal que me haya mandado alguna cagada.
 
