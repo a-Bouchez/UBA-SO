@@ -9,9 +9,13 @@ Este repositorio contiene ejercicios y trabajos prácticos de la materia **Siste
 Quiero agradecer especialmente a las siguientes personas por su ayuda, correcciones y apoyo constante:
 
 - [Benja my beloved](https://github.com/Benjascaf/UBA/tree/main/Sistemas%20Operativos)
+- [Valen, mi media naranja](https://gitlab.com/valn/uba/-/tree/main/Sistemas%20Operativos?ref_type=heads)
 - [Yago](https://github.com/yagopajarino/uba-so)
+- [Uli](https://ulilopezpacho.notion.site/)
 - [Honi, al que le debo todo](https://github.com/honi)
 - [Cuarto integrante misterioso]
+
+Los primeros 4 son repos con resueltos de esta materia por si quiren ver otros.
 
 ---
 
