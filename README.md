@@ -11,7 +11,7 @@ Quiero agradecer especialmente a las siguientes personas por su ayuda, correccio
 - [Benja my beloved](https://github.com/Benjascaf/UBA/tree/main/Sistemas%20Operativos)
 - [Valen, mi media naranja](https://gitlab.com/valn/uba/-/tree/main/Sistemas%20Operativos?ref_type=heads)
 - [Yago](https://github.com/yagopajarino/uba-so)
-- [Uli](https://ulilopezpacho.notion.site/)
+- [Uli](https://ulilopezpacho.notion.site/Sistemas-Operativos-1bfed3df83c680129501d096807fd5dd)
 - [Honi, al que le debo todo](https://github.com/honi)
 - [Cuarto integrante misterioso]
 
