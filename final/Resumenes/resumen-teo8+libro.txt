@@ -1,0 +1,107 @@
+Resumen Teórica 8 + Capítulo 9 del libro – Seguridad de la Información
+
+Introducción:
+La seguridad en sistemas operativos se basa en controlar quién puede hacer qué sobre qué recursos. Esto se estructura como:
+- Sujetos: usuarios, procesos, hilos.
+- Objetos: archivos, memoria, dispositivos, sockets.
+- Acciones: leer, escribir, ejecutar, eliminar.
+
+Modelo AAA:
+- **Authentication** (Autenticación): verificar la identidad del usuario.
+- **Authorization** (Autorización): controlar el acceso a los recursos.
+- **Accounting** (Contabilidad): registrar actividades para análisis posterior.
+
+Autenticación:
+- Contraseñas (lo que el usuario sabe).
+- Tokens físicos o smartcards (lo que tiene).
+- Biométricos (lo que es).
+- Métodos modernos: autenticación multifactor (MFA).
+- Se usan funciones hash con *salt* para proteger contraseñas:
+    - Un *salt* es un valor aleatorio añadido antes del hash para evitar ataques de diccionario.
+    - Ejemplo de función hash segura: SHA-256.
+    - Se busca que sea difícil encontrar dos entradas distintas con el mismo hash (*resistencia a colisiones*).
+
+Criptografía:
+- Criptografía simétrica: la misma clave cifra y descifra (ej: AES).
+- Criptografía asimétrica (RSA): clave pública para cifrar, clave privada para descifrar.
+  - Basado en la dificultad de factorizar grandes enteros.
+  - Utilizado para comunicaciones seguras y firma digital.
+- Firma digital: el emisor cifra un resumen del mensaje con su clave privada. El receptor puede verificar la autenticidad con la clave pública.
+
+Matriz de control de acceso:
+- Modelo conceptual que mapea sujetos, objetos y permisos.
+- No se implementa literalmente; se traduce en estructuras como:
+    - Listas de control de acceso (ACL): cada objeto tiene una lista de quién puede hacer qué.
+    - Capabilities: cada sujeto tiene tokens que indican sus permisos sobre ciertos objetos.
+
+Tipos de control de acceso:
+- **DAC (Discretionary Access Control)**:
+    - El propietario decide los permisos.
+    - Unix lo implementa mediante bits rwx para usuario, grupo y otros.
+    - *setuid* y *setgid* permiten que programas se ejecuten con permisos del propietario o del grupo, comúnmente usado para tareas administrativas controladas.
+    - *sticky bit*: evita que usuarios borren archivos ajenos en directorios compartidos.
+
+- **MAC (Mandatory Access Control)**:
+    - El sistema aplica políticas rígidas e inmodificables por usuarios.
+    - Asociado a sistemas de alta seguridad (gobierno, militar).
+    - Implementa jerarquías de clasificación y reglas como:
+        - Bell-LaPadula: controla flujo de información (no leer hacia arriba, no escribir hacia abajo).
+        - Biba: orientado a mantener la integridad (no leer hacia abajo, no escribir hacia arriba).
+
+Procesos y permisos:
+- Los procesos heredan los permisos del usuario que los inicia.
+- Pueden elevar temporalmente sus privilegios con setuid/setgid.
+- Mal uso de estas capacidades puede abrir vulnerabilidades.
+
+Errores comunes de implementación:
+- Suponer que los inputs son seguros.
+- Leer variables de entorno o PATH sin validación.
+- No validar tamaño de buffers (ejemplo clásico: buffer overflow).
+
+Buffer Overflow:
+- El atacante sobreescribe el stack con código malicioso.
+- Puede modificar la dirección de retorno e invocar su código.
+- Medidas de mitigación:
+    - Stack canaries.
+    - Depuración del stack.
+    - Espacios de direcciones aleatorios (ASLR).
+    - Ejecución no permisiva en zonas de datos (NX bit).
+
+Control de entrada y validación:
+- Validar datos de entrada siempre.
+- Evitar construir comandos con concatenación de strings.
+- Ejecutar procesos potencialmente inseguros con privilegios mínimos (principio de menor privilegio).
+
+Malware:
+- Software malicioso que actúa sin consentimiento del usuario.
+- Tipos:
+    - Virus: se adjunta a otros archivos.
+    - Gusanos: se propagan automáticamente.
+    - Troyanos: aparentan ser útiles pero son dañinos.
+    - Spyware: recolectan información sin permiso.
+    - Ransomware: bloquean el sistema y exigen rescate.
+- Prevención:
+    - Antivirus.
+    - Políticas de acceso mínimas.
+    - Actualizaciones frecuentes del sistema.
+    - No ejecutar software de fuentes no confiables.
+
+Sandboxing y aislamiento:
+- Ejecución controlada y contenida.
+- *chroot jail*: cambia la raíz del sistema de archivos visible.
+- *Contenedores*: como Docker, aíslan procesos con namespaces y cgroups.
+- *Máquinas virtuales*: ofrecen mayor aislamiento que contenedores.
+
+Auditoría y trazabilidad:
+- Sistemas seguros mantienen registros (logs) de accesos, errores y operaciones críticas.
+- Herramientas de análisis ayudan a detectar intentos de intrusión o abuso.
+
+Principios de diseño seguro (según Tanenbaum):
+1. Principio de mínimo privilegio.
+2. Principio de compartimentación.
+3. Principio de economía de mecanismos: diseño simple, fácil de verificar.
+4. Principio de apertura: seguridad no debe depender del secreto del diseño.
+5. Principio de defensa en profundidad.
+6. Principio de responsabilidad: trazabilidad de acciones.
+7. Principio de falla segura: los errores no deben abrir brechas.
+8. Principio de facilidad de uso: si un sistema es difícil de usar, los usuarios buscarán atajos inseguros.
