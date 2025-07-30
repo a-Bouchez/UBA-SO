@@ -1,0 +1,140 @@
+Resumen Teórica 1 - Procesos y API del Sistema Operativo + Capítulo 2 del libro
+-------------------------------------------------------------------------------
+
+¿Qué es un proceso?
+-------------------
+Un proceso es un programa en ejecución, junto con su contexto actual: estado de CPU, variables, código y recursos asociados. El sistema operativo le asigna un identificador único (PID).
+
+Estructura en memoria de un proceso:
+- Área de texto: contiene el código ejecutable (instrucciones del programa).
+- Área de datos: incluye variables globales y el heap (asignación dinámica).
+- Stack (pila): contiene variables locales y el contexto de ejecución de funciones.
+
+Cada proceso tiene su propio espacio de direcciones y contexto de ejecución.
+
+Operaciones sobre procesos
+--------------------------
+Un proceso puede:
+
+- Crear procesos hijos (fork()).
+- Reemplazar su código con otro programa (exec()).
+- Finalizar (exit()).
+- Realizar llamadas al sistema (syscalls).
+- Ejecutarse en CPU o bloquearse por E/S.
+
+Jerarquía de procesos
+---------------------
+Los procesos están organizados jerárquicamente en forma de árbol:
+
+- Un proceso puede crear hijos mediante `fork()`.
+- El proceso raíz es `init` (o `systemd` en sistemas modernos).
+- Un shell, por ejemplo, crea un proceso hijo y luego invoca `exec()` para ejecutar un programa.
+
+Cambio de contexto (context switch)
+-----------------------------------
+El SO puede interrumpir un proceso en ejecución para dar paso a otro. Esto requiere:
+
+- Guardar el estado actual del proceso (registros, PC).
+- Restaurar el estado del nuevo proceso.
+
+Esta operación introduce overhead y se realiza por el **scheduler**, que decide qué proceso se ejecuta a continuación.
+
+Process Control Block (PCB)
+---------------------------
+El SO mantiene información de cada proceso en una estructura llamada PCB:
+
+- PID, estado (listo, ejecutando, bloqueado), prioridad.
+- Registros de CPU salvados.
+- Estadísticas de uso de CPU, recursos asignados, etc.
+- Ubicación de su espacio de memoria.
+
+Todos los PCBs están organizados en estructuras como listas o colas para facilitar la planificación.
+
+Estados de un proceso
+---------------------
+Los principales estados por los que puede transitar un proceso son:
+
+- Nuevo (new)
+- Listo (ready)
+- Ejecutando (running)
+- Bloqueado (waiting)
+- Terminado (terminated)
+
+Los cambios de estado ocurren por eventos como finalización, interrupciones o bloqueos por E/S.
+
+Carga del sistema = cantidad de procesos en estado “listo”.
+
+Llamadas al sistema (Syscalls)
+------------------------------
+Una syscall es una interfaz controlada para que un proceso pueda pedir servicios al kernel.
+
+Características:
+
+- Implican un cambio de modo: de usuario a kernel.
+- Se pasan parámetros mediante registros o estructuras en memoria.
+- Generalmente están envueltas por funciones de biblioteca (ej. en C).
+
+Ejemplo en ensamblador (Linux, x86):
+    mov eax, 4      ; número de syscall write
+    mov ebx, 1      ; stdout
+    mov ecx, msg
+    mov edx, len
+    int 0x80        ; interrupción que invoca al kernel
+
+Ejemplo equivalente en C:
+    #include <unistd.h>
+    int main() {
+        write(1, "Hola SO!\n", 9);
+        return 0;
+    }
+
+Entrada/Salida (E/S)
+--------------------
+La E/S es mucho más lenta que la CPU. Por eso, se evita el “busy waiting” (espera activa).
+
+Mecanismos para E/S eficiente:
+
+- Polling: el proceso consulta si el dispositivo está listo.
+- Interrupciones: el dispositivo avisa cuando finaliza.
+- Syscalls como `select()` permiten que un proceso se duerma hasta que algo esté disponible.
+
+Hilos (Threads)
+---------------
+Un **hilo** es una unidad de ejecución dentro de un proceso. Todos los hilos de un proceso comparten:
+
+- Código, datos y recursos.
+- Pero cada uno tiene su propia pila, contador de programa y registros.
+
+Ventajas de los hilos:
+
+- Más ligeros que los procesos (no duplican espacio de direcciones).
+- Eficientes para tareas concurrentes.
+- Útiles en aplicaciones interactivas y paralelas (navegadores, servidores web, etc.).
+
+Tipos de hilos:
+
+1. User-level threads:
+   - Gestionados por bibliotecas del espacio de usuario.
+   - No requieren intervención del kernel, pero no pueden aprovechar múltiples núcleos.
+
+2. Kernel-level threads:
+   - Gestionados por el sistema operativo.
+   - El kernel puede asignar diferentes hilos a diferentes CPUs.
+
+3. Modelos híbridos:
+   - Combinan lo mejor de ambos mundos.
+   - Varios hilos de usuario pueden mapearse sobre un número menor de hilos de kernel.
+
+Conceptos “multi”
+-----------------
+- **Multiprogramación**: múltiples procesos activos en memoria al mismo tiempo.
+- **Multitarea (multitasking)**: el sistema conmute rápidamente entre procesos.
+- **Multiprocesamiento**: el sistema tiene varios CPUs físicos o núcleos.
+- **Multithreaded**: un proceso contiene varios hilos concurrentes.
+
+Resumen final
+-------------
+- El proceso es la unidad fundamental de ejecución en un sistema operativo.
+- La planificación, sincronización, comunicación e interacción entre procesos son pilares del diseño moderno del SO.
+- El uso de hilos permite mayor eficiencia en aplicaciones paralelas.
+

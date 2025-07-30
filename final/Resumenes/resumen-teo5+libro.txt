@@ -1,0 +1,165 @@
+Resumen Teórica 5 - Administración de Memoria + Capítulo 3 del libro
+--------------------------------------------------------------------
+
+Objetivo:
+---------
+Entender cómo el sistema operativo gestiona la memoria de manera segura, eficiente y compartida entre múltiples procesos, usando técnicas como la paginación, la segmentación y la memoria virtual.
+
+Manejador de memoria:
+---------------------
+El SO es responsable de:
+- Reservar y liberar memoria.
+- Rastrear qué partes están libres y cuáles están ocupadas.
+- Proveer protección entre procesos.
+- Implementar mecanismos como swapping y memoria virtual.
+
+Espacio de direcciones:
+-----------------------
+- **Espacio lógico (virtual)**: generado por el programa.
+- **Espacio físico**: direcciones reales en RAM.
+- La **MMU** traduce direcciones virtuales a físicas.
+
+Reubicación y protección:
+-------------------------
+Cada proceso se ejecuta como si estuviera solo en memoria. El sistema debe:
+- Reubicar dinámicamente su código.
+- Proteger su espacio de direcciones.
+
+Técnicas para administración del espacio:
+-----------------------------------------
+
+**Asignación contigua (obsoleta)**:
+- Asignación estática o dinámica.
+- Técnicas como **first fit**, **best fit**, **worst fit** y **quick fit**.
+- Problema: **fragmentación externa** → pequeños huecos no utilizables.
+
+**Bitmap**:
+- La memoria se divide en bloques fijos.
+- Una tabla de bits indica si cada bloque está ocupado (1) o libre (0).
+- Requiere búsqueda secuencial para encontrar espacios libres contiguos.
+
+**Listas enlazadas**:
+- Cada entrada representa un bloque (ocupado o libre) con su tamaño y estado.
+- Más flexible que bitmap.
+- Fragmentación persiste.
+
+**Buddy System**:
+- Divide bloques en potencias de 2.
+- Combina bloques adyacentes al liberar.
+- Compromiso entre eficiencia y simplicidad.
+
+Fragmentación:
+--------------
+- **Externa**: bloques pequeños y dispersos.
+- **Interna**: espacio desperdiciado dentro de bloques asignados.
+
+Memoria virtual:
+----------------
+Permite que los programas usen más memoria de la que hay físicamente disponible combinando:
+- Espacio virtual por proceso.
+- Swapping (intercambio con disco).
+- Paginación (mapear páginas a marcos).
+
+**Ventajas**:
+- Permite multitarea eficiente.
+- Aísla procesos.
+- Facilita carga bajo demanda.
+
+Paginación:
+-----------
+- Divide la memoria en **páginas** (virtual) y **marcos** (física), de igual tamaño (potencias de 2, típicamente 4 KB).
+- El sistema usa una **tabla de páginas** para cada proceso.
+- La MMU traduce páginas a marcos automáticamente.
+
+**Page Table Entry (PTE)** contiene:
+- Número de marco asignado.
+- Bit de presencia.
+- Bit de protección (lectura/escritura/ejecución).
+- Bit de acceso reciente (referenced).
+- Bit dirty (modificado).
+
+**Page Fault**:
+- Ocurre cuando una página referenciada no está en memoria.
+- El sistema:
+  - Detiene el proceso.
+  - Carga la página desde disco.
+  - Actualiza la tabla de páginas.
+  - Reanuda la ejecución.
+
+Tablas de páginas multinivel:
+-----------------------------
+Para evitar tener una tabla lineal gigante:
+- Se divide la tabla en niveles jerárquicos.
+- Cada nivel se accede con un subconjunto de bits de la dirección virtual.
+- Permite paginar sólo partes de la tabla.
+
+TLB (Translation Lookaside Buffer):
+-----------------------------------
+- Caché de entradas de la tabla de páginas.
+- Muy rápida (hardware).
+- Si la dirección no está → TLB miss → acceso a la tabla en memoria.
+
+Segmentación:
+-------------
+Divide el espacio de direcciones en segmentos lógicos:
+- Stack, heap, código, datos, etc.
+- Cada segmento tiene un registro base y un límite.
+- Permite crecer dinámicamente (por ejemplo, el stack).
+- Facilita protecciones por segmento.
+
+**Segmentación + Paginación**:
+- Segmentos divididos internamente en páginas.
+- Ofrece flexibilidad + facilidad de implementación.
+
+Copy-on-Write:
+--------------
+Al hacer `fork()`, padre e hijo comparten páginas de solo lectura.
+- Si alguno escribe → se duplica la página.
+- Mejora rendimiento y uso de memoria.
+
+Swapping:
+---------
+- Movimiento de procesos (o páginas) entre RAM y disco.
+- Puede ser a nivel proceso (tradicional) o a nivel página (moderno).
+- Muy costoso → se usa con cuidado.
+
+Algoritmos de reemplazo de páginas:
+-----------------------------------
+Cuando la memoria está llena, se elige qué página quitar.
+
+**FIFO**:
+- Quita la más antigua.
+- Simple pero ineficiente (puede eliminar páginas aún activas).
+
+**Segunda oportunidad (Clock)**:
+- Variante de FIFO con bit de uso.
+- Si una página fue usada, se le da una "segunda oportunidad".
+
+**NRU (Not Recently Used)**:
+- Clasifica páginas según bits de uso y escritura.
+- Se elige una clase baja (no usada ni modificada).
+
+**LRU (Least Recently Used)**:
+- Elimina la página menos utilizada recientemente.
+- Difícil de implementar perfectamente → se aproximan con hardware o bits.
+
+Thrashing:
+----------
+- Sucede cuando hay poca memoria física.
+- El SO pasa más tiempo cargando páginas que ejecutando procesos.
+- Indica sobrecarga de procesos → requiere reducir multitarea o ajustar políticas.
+
+API de usuario (desde libc):
+----------------------------
+- `malloc()` / `free()`: asignación dinámica.
+- `mmap()`: mapea archivos o memoria anónima.
+- `brk()` / `sbrk()`: modifica el límite del heap (menos usado actualmente).
+- Bibliotecas modernas (glibc, jemalloc) manejan estrategias internas de memoria.
+
+Resumen:
+--------
+- La administración de memoria es fundamental para la eficiencia del sistema operativo.
+- La memoria virtual permite abstraer la RAM real, protegiendo procesos y mejorando la flexibilidad.
+- Paginación y segmentación son las técnicas principales usadas hoy.
+- El TLB y las tablas de páginas jerárquicas permiten que el sistema escale a grandes volúmenes de memoria.
+- La correcta elección de algoritmos de reemplazo y el manejo de faulting determinan el rendimiento del sistema.

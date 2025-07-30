@@ -1,0 +1,95 @@
+==========================
+Resumen: Administración de Entrada/Salida
+==========================
+
+1. Estructura básica de E/S:
+- Un dispositivo de E/S se compone del dispositivo físico y su controlador.
+- El controlador interactúa con el sistema operativo a través de registros o buses.
+- Los buses de E/S permiten la comunicación entre CPU, memoria y dispositivos.
+
+2. Manejo por parte del Sistema Operativo:
+- El administrador de E/S coordina el acceso a los dispositivos.
+- El SO brinda una interfaz abstracta a los programas de usuario mediante llamadas como `open`, `read`, `write`, `close`, `seek`.
+
+3. Tipos de dispositivos:
+- Dispositivos de carácter (char devices): mouse, teclado, etc. Transmiten datos byte a byte, no permiten acceso aleatorio ni caching.
+- Dispositivos de bloque (block devices): discos duros, CD-ROM, etc. Acceden por bloques, permiten caching y acceso aleatorio.
+
+4. Drivers de dispositivo:
+- Software específico para cada hardware, corre en modo privilegiado.
+- Proporciona funciones para iniciar operaciones, manejar interrupciones, etc.
+- El rendimiento del sistema depende fuertemente del rendimiento del driver.
+
+5. Métodos de comunicación con dispositivos:
+- Polling: consulta activa por parte de la CPU; simple, pero ineficiente.
+- Interrupciones: el dispositivo notifica al SO; eficiente pero introduce cambios de contexto.
+- DMA (acceso directo a memoria): el controlador transfiere datos directamente a memoria sin intervención de la CPU. Ideal para grandes volúmenes.
+
+6. API de E/S:
+- En Linux, los dispositivos se acceden como archivos en `/dev`.
+- Funciones como `fopen`, `fread`, `fwrite`, etc., permiten manejar dispositivos igual que archivos.
+
+7. Planificación de E/S en discos:
+- El disco tiene cabezales móviles; reducir su movimiento mejora el rendimiento.
+- Algoritmos:
+  - FCFS: por orden de llegada. Sencillo, pero ineficiente.
+  - SSTF: atiende al pedido más cercano. Menor tiempo medio, pero puede generar inanición.
+  - SCAN (elevator): el cabezal se mueve en una dirección y atiende pedidos en ese trayecto.
+  - C-SCAN: versión circular del SCAN.
+  - LOOK y C-LOOK: versiones mejoradas que no recorren pistas innecesarias.
+
+8. Tecnologías de almacenamiento:
+- HDD: discos mecánicos tradicionales.
+- SSD: sin partes móviles, rápidos en lectura, escritura más compleja (write amplification).
+- Tienen menor consumo y mayor resistencia física.
+
+9. Gestión del disco:
+- Formateo: agrega información de control de errores a cada sector.
+- Booteo: la ROM carga un pequeño programa que inicializa el SO.
+- Manejo de bloques dañados: remapeo automático o software del sistema de archivos.
+
+10. Spooling:
+- Técnica para manejar dispositivos que requieren acceso exclusivo (ej: impresoras).
+- Los trabajos se encolan para que un proceso intermediario los maneje en orden.
+
+11. Exclusión mutua y locking:
+- POSIX permite usar archivos como locks mediante `open(..., O_CREAT | O_EXCL)`.
+
+12. Protección y respaldo de datos:
+- Hacer backup es fundamental. Métodos:
+  - Copias completas: todos los archivos.
+  - Incrementales: solo los modificados desde la última copia incremental.
+  - Diferenciales: modificados desde la última copia completa.
+
+13. Redundancia con RAID:
+- RAID 0: distribución (striping) sin redundancia, mejora rendimiento (guardan un bloque en cada disco).
+- RAID 1: espejo (mirroring), alta redundancia.
+- RAID 0+1: combinación de ambos.
+- RAID 2, 3, 4: usan códigos de detección y corrección.
+- RAID 5: paridad distribuida, tolerancia a la falla de un disco.
+- RAID 6: paridad doble, tolera dos fallos.
+
+14. Principios del diseño de E/S (del libro):
+- Separación entre política y mecanismo.
+- Ofrecer una interfaz uniforme a los dispositivos.
+- Manejo de errores, buffering, caching, y uso eficiente de la CPU.
+- Asignación de dispositivos (estática o dinámica).
+- Planificación del acceso para maximizar throughput y minimizar latencia.
+
+15. Controladores e interrupciones (libro):
+- Los controladores se agrupan en niveles jerárquicos:
+  - Controladores de dispositivo (más cercanos al hardware).
+  - Manejadores independientes del dispositivo (parte del núcleo).
+  - Software de usuario.
+- Las interrupciones son manejadas por rutinas en el kernel que deben ser rápidas y eficientes.
+
+16. Buffering y caching (libro):
+- Buffering: almacenamiento temporal para lidiar con diferencias de velocidad entre productor y consumidor.
+- Caching: almacenamiento de copias recientes para acceso rápido.
+- Spooling: buffering especial que permite compartir dispositivos entre procesos.
+
+17. Asignación de dispositivos (libro):
+- Estática (en tiempo de arranque) o dinámica (cuando el dispositivo es requerido).
+- Puede requerir exclusión mutua, colas, y mecanismos de notificación.
+
+==========================

@@ -1,0 +1,116 @@
+Resumen Teórica 4 - Sincronización entre Procesos + Capítulo 2 del libro
+------------------------------------------------------------------------
+
+Motivación:
+-----------
+En sistemas multiprocesador o multihilo, es común que múltiples procesos o threads compartan datos. Esto puede dar lugar a **race conditions** si no se controla adecuadamente el acceso a dichos recursos compartidos.
+
+Race Condition:
+---------------
+Una **race condition** ocurre cuando el resultado de la ejecución de procesos concurrentes depende del orden específico en que se intercalan sus instrucciones.
+
+Objetivo: garantizar que todas las ejecuciones concurrentes sean equivalentes a alguna secuencia válida de ejecuciones secuenciales.
+
+Solución: asegurar **exclusión mutua** mediante el uso de **zonas críticas**.
+
+Secciones críticas (critical sections):
+---------------------------------------
+Una sección crítica es una parte del código donde un proceso accede a recursos compartidos (variables, buffers, etc.).
+
+Requisitos para exclusión mutua:
+1. **Mutua exclusión**: sólo un proceso a la vez puede estar en la sección crítica.
+2. **Progreso**: si nadie está en la sección crítica, algún proceso que quiera entrar podrá hacerlo.
+3. **Espera limitada**: ningún proceso debe esperar indefinidamente para acceder.
+
+Implementaciones básicas:
+-------------------------
+1. **Disabling interrupts**:
+   - Funciona en sistemas monoprocesador.
+   - No apto para usuarios normales ni multiprocesadores.
+
+2. **Locks software**:
+   - Soluciones clásicas como el algoritmo de Dekker o Peterson.
+   - Puras de software, pero complejas y propensas a errores.
+
+3. **Instrucciones atómicas (hardware support)**:
+   - **TestAndSet (TAS)**: instrucción atómica que cambia una variable de `false` a `true` y devuelve su valor anterior.
+   - Permite construir **spinlocks**: el proceso espera activamente hasta obtener acceso.
+
+Problemas con spinlocks:
+------------------------
+- **Busy waiting**: el CPU se consume sin hacer trabajo útil.
+- No es eficiente si el tiempo de espera es largo.
+
+Mejoras:
+--------
+- **Sleep y wakeup**: el proceso que no puede entrar en la sección crítica se duerme hasta que pueda hacerlo.
+- Mejora el uso del CPU pero requiere mecanismos adicionales.
+
+Semáforos (Dijkstra):
+---------------------
+Propuestos por Dijkstra, los **semáforos** son enteros protegidos que permiten controlar el acceso concurrente.
+
+Operaciones atómicas:
+- `P()` o `wait()`: decrementa el valor del semáforo. Si es < 0, el proceso se bloquea.
+- `V()` o `signal()`: incrementa el valor. Si hay procesos bloqueados, se despierta uno.
+
+Tipos:
+- **Semáforo binario**: sólo puede ser 0 o 1 (similar a un lock).
+- **Semáforo contador**: puede llevar la cuenta de múltiples recursos.
+
+Ventajas:
+- Eliminan el busy waiting.
+- Permiten sincronización compleja (productor-consumidor, lectores-escritores, etc.).
+
+Ejemplo clásico: Productor-Consumidor
+-------------------------------------
+Buffer con capacidad finita:
+- Semáforo `vacíos`: cuenta los espacios disponibles.
+- Semáforo `llenos`: cuenta ítems disponibles.
+- Semáforo `mutex`: garantiza exclusión mutua.
+
+Deadlocks:
+----------
+Un **deadlock** ocurre cuando un grupo de procesos queda permanentemente bloqueado esperando recursos entre sí.
+
+Condiciones necesarias para que ocurra (Coffman):
+1. Exclusión mutua.
+2. Hold and wait.
+3. No preemption (no se puede forzar la liberación).
+4. Espera circular (ciclo de dependencia).
+
+Representación:
+- Grafo bipartito entre procesos y recursos.
+- Si hay un ciclo → posibilidad de deadlock.
+
+Evitar y prevenir:
+- Evitar alguna de las condiciones necesarias.
+- Políticas como asignación ordenada, detección con recuperación, o evitar estados inseguros (bancos, algoritmos tipo Banker´s).
+
+Locks avanzados:
+----------------
+1. **TTAS (Test-Test-And-Set)**:
+   - Reduce tráfico de memoria compartida.
+   - Espera leyendo hasta que el lock está libre, y sólo entonces hace el `testAndSet()`.
+
+2. **Compare-and-Swap (CAS)**:
+   - Reemplaza un valor sólo si sigue siendo igual al esperado.
+   - Permite construir estructuras concurrentes sin locks.
+
+3. **Locks reentrantes**:
+   - Permiten que el mismo proceso adquiera varias veces el mismo lock.
+   - Se usa un contador de entradas y un identificador de propietario.
+
+Monitores (introducción desde el libro):
+----------------------------------------
+- Abstracción de alto nivel para sincronización.
+- Combinan exclusión mutua automática con **variables de condición** para suspender y despertar procesos dentro del monitor.
+- Facilitan la programación segura de concurrencia (aunque no se profundizan en la materia).
+
+Resumen:
+--------
+- La sincronización entre procesos es esencial para evitar errores en sistemas concurrentes.
+- Las secciones críticas deben protegerse con mecanismos adecuados.
+- Los semáforos permiten controlar accesos sin esperar activamente.
+- Los deadlocks son riesgos comunes y deben tratarse mediante diseño cuidadoso.
+- Existen técnicas modernas con soporte de hardware que permiten implementar sincronización más eficiente.

@@ -1,0 +1,102 @@
+Resumen Teórica 3 - Scheduling + Capítulo 2 del libro
+-----------------------------------------------------
+
+Gran parte del esfuerzo por optimizar el rendimiento de un sistema operativo se centra en la política de scheduling.
+
+Objetivos del scheduling
+------------------------
+El sistema operativo busca optimizar varias métricas mediante el algoritmo de planificación de CPU:
+
+- Fairness (justicia): repartir el uso del CPU de forma equitativa.
+- Eficiencia: mantener el CPU ocupado el mayor tiempo posible.
+- Carga del sistema: minimizar procesos en espera.
+- Tiempo de respuesta: importante en sistemas interactivos.
+- Tiempo de retorno (turnaround): minimizar el tiempo total desde la llegada hasta la finalización del proceso.
+- Rendimiento (throughput): maximizar procesos completados por unidad de tiempo.
+- Liberación de recursos: priorizar procesos que tienen muchos recursos bloqueados.
+
+Estos objetivos son, muchas veces, contradictorios. Por eso, cada política de scheduling implementa una combinación balanceada según el tipo de sistema.
+
+Tipos de scheduling
+-------------------
+
+Preemptive vs No-preemptive:
+
+- Preemptive: el sistema puede suspender un proceso en ejecución para ejecutar otro. Se apoya en interrupciones de timer.
+- No-preemptive (cooperativo): un proceso cede voluntariamente el control (por ejemplo, al realizar E/S). Simpler but less responsive.
+
+En general, los sistemas modernos son preemptivos.
+
+Algoritmos clásicos
+-------------------
+
+1. First-Come, First-Served (FCFS):
+   - Cola FIFO. El primer proceso que llega se ejecuta hasta terminar.
+   - Simple, pero puede generar el "convoy effect": procesos cortos deben esperar a uno largo.
+   - Puede provocar inanición si hay procesos con tiempos de CPU muy altos.
+
+2. Shortest Job First (SJF):
+   - El proceso con la menor duración estimada se ejecuta primero.
+   - Si se conocen las duraciones, es óptimo en promedio.
+   - Puede ser no-preemptive o preemptive (Shortest Remaining Time First).
+   - No es práctico si no se puede estimar la duración de los procesos.
+
+3. Round Robin (RR):
+   - Cada proceso recibe un "quantum" (intervalo de tiempo).
+   - Si no termina, se reubica al final de la cola.
+   - Quantum demasiado grande → similar a FCFS.
+   - Quantum muy pequeño → muchos context switches → bajo rendimiento.
+   - Muy usado en sistemas interactivos. Requiere balance entre justicia y eficiencia.
+
+4. Priority Scheduling:
+   - Cada proceso tiene una prioridad. Se ejecuta el de mayor prioridad.
+   - Puede ser preemptive o no.
+   - Riesgo de inanición para procesos con baja prioridad → se puede mitigar con "aging" (aumentar prioridad con el tiempo).
+
+5. Multilevel Queue Scheduling:
+   - Hay varias colas con distintas prioridades y políticas internas (ej. una con RR, otra con FCFS).
+   - Se asignan procesos a colas según su tipo (interactivo, batch, etc.).
+   - Puede usarse con realimentación dinámica (ver más abajo).
+
+6. Multilevel Feedback Queue:
+   - Similar al anterior, pero los procesos pueden moverse entre colas.
+   - Beneficia procesos cortos e interactivos.
+   - Ejemplo típico: quantum creciente por cola (1, 2, 4, 8...).
+   - Si un proceso consume mucho CPU sin terminar, baja de nivel.
+   - Si hace E/S o espera, puede subir de nuevo.
+
+7. Lottery Scheduling:
+   - Cada proceso tiene "tickets" (boletos).
+   - Cada quantum, se elige un ticket al azar.
+   - Proporciona una forma simple de implementar fairness proporcional.
+
+8. Real-Time Scheduling:
+   - Procesos con deadlines estrictos.
+   - Ejemplos:
+     - Rate-Monotonic Scheduling (RMS): prioridad fija basada en frecuencia.
+     - Earliest Deadline First (EDF): ejecuta el proceso más cercano a su deadline.
+   - Crítico en sistemas embebidos, aeronáutica, etc.
+
+Scheduling en SMP (multiprocesadores)
+-------------------------------------
+- Desafíos adicionales:
+  - Afinidad de CPU: procesos tienden a ejecutar mejor en el mismo CPU por cache.
+  - Balanceo de carga: evitar que un núcleo esté ocioso mientras otro esté sobrecargado.
+
+- Técnicas:
+  - Push migration: el sistema mueve procesos desde CPUs sobrecargados.
+  - Pull migration: CPUs desocupadas buscan trabajo.
+
+Combinaciones modernas
+----------------------
+- Linux usa el Completely Fair Scheduler (CFS), basado en una estructura de árbol rojo-negro.
+- CFS intenta mantener fairness real mediante el rastreo del "tiempo virtual" de cada proceso.
+- Implementa prioridades con peso (nice values).
+- También combina feedback y temporización ajustable para adaptarse a distintos tipos de cargas.
+
+Resumen práctico
+----------------
+- No hay un único mejor algoritmo: depende del entorno (interactivo, batch, tiempo real, etc.).
+- Las implementaciones reales suelen combinar varias estrategias.
+- La teoría ayuda a entender los efectos de las decisiones del sistema operativo.
+

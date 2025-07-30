@@ -1,0 +1,115 @@
+Resumen Teórica 2 - Comunicación entre Procesos (IPC) + Capítulo 2 del libro
+----------------------------------------------------------------------------
+
+Objetivos:
+----------
+- Comprender qué es la comunicación entre procesos (IPC).
+- Analizar distintas técnicas para intercambiar datos entre procesos.
+- Estudiar el rol de los file descriptors, pipes y sockets en Unix.
+- Complementar los conceptos vistos en clase con el desarrollo del libro.
+
+Introducción al IPC
+-------------------
+La comunicación entre procesos permite que múltiples procesos colaboren y compartan datos. Esto es fundamental tanto en sistemas operativos tradicionales como en sistemas distribuidos o concurrentes.
+
+Formas de IPC
+-------------
+El capítulo del libro y la teórica distinguen las siguientes técnicas principales:
+
+1. Memoria compartida:
+   - Una región de memoria es accesible por varios procesos.
+   - Altamente eficiente, pero requiere mecanismos de sincronización (mutexes, semáforos, etc.) para evitar condiciones de carrera.
+   - Muy utilizada en sistemas que requieren alto rendimiento.
+
+2. Recurso compartido:
+   - Los procesos acceden a un archivo, base de datos o dispositivo compartido.
+   - Es simple pero menos eficiente, ya que la escritura/lectura implica operaciones de E/S persistente.
+
+3. Pasaje de mensajes:
+   - Los procesos se comunican mediante operaciones explícitas de envío (send) y recepción (receive).
+   - Puede ser:
+     - Síncrona o asíncrona (bloqueante o no bloqueante).
+     - Directa (entre procesos específicos) o indirecta (a través de buzones o colas).
+   - Este método abstrae los detalles de sincronización.
+   - Es muy usado en sistemas distribuidos y microkernels, aunque no se profundiza en la materia.
+
+File Descriptors (FDs)
+----------------------
+- En Unix, todos los recursos (archivos, pipes, sockets) se acceden mediante **file descriptors**.
+- Un file descriptor es un entero que indexa una tabla de archivos abiertos del proceso.
+- Cada proceso tiene su propia tabla, copiada al hacer fork().
+- Los tres FDs estándar:
+    0: entrada estándar (stdin)
+    1: salida estándar (stdout)
+    2: error estándar (stderr)
+
+- La llamada exec() reemplaza la imagen del proceso, pero mantiene los FDs abiertos, lo cual permite redirección y herencia de recursos.
+
+Pipes
+-----
+Los pipes son mecanismos de IPC basados en memoria del kernel. Funcionan como buffers FIFO.
+
+- Son unidireccionales: un extremo escribe, otro lee.
+- No tienen estructura de mensaje, solo una secuencia de bytes (byte stream).
+- Son útiles para la comunicación entre procesos relacionados, como padre e hijo.
+
+Tipos de pipes:
+---------------
+1. Ordinary (pipes anónimos):
+   - No tienen nombre en el sistema de archivos.
+   - Se crean con la syscall:
+       int pipe(int pipefd[2]);
+     donde pipefd[0] es lectura y pipefd[1] es escritura.
+   - Usados típicamente en combinaciones de comandos (ej. ls -l | grep so).
+   - Después de un fork(), ambos extremos se heredan. Cada proceso cierra el extremo que no usa.
+
+2. Named pipes (FIFOs):
+   - Persisten como archivos en el sistema y se crean con mkfifo().
+   - Permiten comunicación entre procesos no emparentados.
+   - Acceso con open(), write() y read(), como si fueran archivos regulares.
+
+Redirección y dup2()
+--------------------
+- Permiten modificar la salida/entrada estándar de un proceso.
+- La syscall dup2(oldfd, newfd) redirige un descriptor sobre otro.
+  Ejemplo:
+    echo "texto" > archivo.txt
+  Aquí, el shell abre archivo.txt (nuevo FD) y redirige stdout (FD 1) con dup2.
+
+Sockets
+-------
+Los sockets son un mecanismo de IPC más general y poderoso que los pipes.
+
+Características:
+- Permiten comunicación bidireccional.
+- Pueden usarse entre procesos locales (Unix sockets) o a través de la red (INET sockets).
+- Admiten mayor control sobre los protocolos de comunicación (TCP, UDP, etc.).
+
+Tipos de sockets:
+-----------------
+1. Unix domain sockets (AF_UNIX):
+   - Comunicación local entre procesos en la misma máquina.
+   - Muy eficientes, ya que evitan la pila de red.
+   - Usan archivos del sistema como punto de conexión.
+
+2. Internet sockets (AF_INET):
+   - Usan IPs y puertos para permitir la comunicación entre procesos en diferentes máquinas.
+   - Requieren protocolos (TCP/UDP), más overhead y latencia.
+   - Ampliamente usados en sistemas cliente-servidor, redes y web.
+
+Creación de sockets:
+--------------------
+int socket(int domain, int type, int protocol);
+
+- domain: AF_UNIX, AF_INET, etc.
+- type: SOCK_STREAM (TCP), SOCK_DGRAM (UDP), etc.
+- protocol: normalmente se deja como 0.
+
+Resumen final
+-------------
+- IPC es esencial para el diseño de sistemas concurrentes.
+- Cada método tiene ventajas y limitaciones según el tipo de aplicación.
+- En Unix, todo se modela como archivo: pipes, sockets y más, usando file descriptors.
+- La memoria compartida es la opción más rápida, pero requiere control explícito de concurrencia.
+- Los pipes y sockets ofrecen abstracciones útiles para procesos cooperativos y estructuras cliente-servidor.
+

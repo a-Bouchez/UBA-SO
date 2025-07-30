@@ -1,0 +1,124 @@
+Resumen Teórica 7 + Capítulo 4 del libro: Sistemas de Archivos y Proceso de Booteo
+==================================================================================
+
+Booteo
+------
+El proceso de booteo consiste en una serie de etapas que inician el sistema operativo hasta dejar el sistema listo para ser utilizado.
+
+Etapas de booteo:
+- BIOS/UEFI: Inicializa el hardware básico (CPU, RAM, teclado, etc.) y busca un dispositivo de booteo.
+- MBR/GPT:
+  - MBR (Master Boot Record): primer sector del disco, utilizado por BIOS, puede direccionar hasta 2 TB.
+  - GPT (GUID Partition Table): estándar moderno usado por UEFI, soporta discos mucho más grandes.
+- GRUB (o bootloader): Permite seleccionar el sistema operativo y cargar el kernel en memoria.
+- Kernel: Inicializa el sistema operativo, detecta hardware y monta el sistema de archivos raíz.
+- Init o systemd: Inicia los servicios del sistema.
+- Login: El usuario puede iniciar sesión.
+
+Sistemas de Archivos (FS)
+--------------------------
+Un archivo es, conceptualmente, una secuencia de bytes sin estructura. El sistema de archivos es un módulo del kernel que organiza cómo se almacenan estos datos en disco.
+
+Responsabilidades del FS:
+- Determinar cómo se organizan los datos en los archivos (estructura interna).
+- Controlar cómo se organizan los archivos en el sistema (estructura externa).
+- Mantener la jerarquía de directorios (organización en árbol).
+- Manejar la metadata de archivos y directorios (permisos, timestamps, tamaño, etc.).
+- Proveer mecanismos de protección y control de acceso.
+
+Estructura de archivos
+-----------------------
+El sistema operativo no impone una estructura a los archivos, pero muchas aplicaciones los usan con estructuras lógicas (ej: encabezado + bloques de datos).
+
+Los sistemas operativos ofrecen operaciones comunes:
+- Crear, eliminar, leer, escribir, abrir, cerrar archivos.
+- Manipulación de punteros, atributos y permisos.
+
+Estructura de directorios
+--------------------------
+Los directorios permiten organizar los archivos jerárquicamente.
+
+Tipos:
+- Plano: todos los archivos están en un solo directorio (muy limitado).
+- Jerárquico (árbol): permite subdirectorios, muy usado hoy en día.
+- Acíclico general (DAG): permite enlaces duros (hard links), pero se prohíben ciclos.
+
+Archivos especiales:
+- Dispositivos se representan como archivos especiales (ej: `/dev/sda`).
+- Pipes y sockets también son tratados como archivos.
+
+Links:
+- Hard links: dos entradas de directorio que apuntan al mismo inodo.
+- Symbolic links: archivo especial que apunta a otro archivo (como un acceso directo).
+
+Representación de Archivos en Disco
+------------------------------------
+Para el sistema de archivos, un archivo es una lista de bloques en disco más su metadata.
+
+- Lista enlazada de bloques:
+  - Útil para lecturas secuenciales.
+  - Ineficiente para acceso aleatorio.
+  - Puede generar fragmentación.
+
+- FAT (File Allocation Table):
+  - Cada entrada de la tabla indica qué bloque sigue.
+  - Requiere mantener la tabla entera en memoria.
+
+- Inodos:
+  - Contienen punteros directos e indirectos.
+  - Permiten crecer dinámicamente.
+  - Separan metadata del contenido del archivo.
+
+Espacios libres:
+- Bitmap: 1 bit por bloque indica si está libre.
+- Lista enlazada: bloques libres enlazados entre sí.
+- Grupo de bloques libres con puntero al siguiente grupo.
+
+Buffer cache
+------------
+- El kernel mantiene una cache de disco para almacenar temporalmente bloques leídos o modificados.
+- Mejora rendimiento evitando accesos frecuentes al disco.
+
+Journaling
+----------
+- En sistemas con journaling (ext3, ext4, XFS, etc.), los cambios al sistema de archivos se escriben primero en un journal.
+- Luego se aplican al sistema de archivos real.
+- Reduce riesgo de corrupción y acelera la recuperación tras fallos.
+
+Protección de archivos
+-----------------------
+El sistema operativo implementa mecanismos de control de acceso mediante permisos.
+
+- Unix: lectura (r), escritura (w), ejecución (x) para usuario, grupo y otros.
+- ACL (Access Control List): listas que permiten mayor granularidad, especificando permisos por usuario o grupo.
+
+Montaje de sistemas de archivos
+-------------------------------
+- Se puede montar un sistema de archivos dentro de otro para expandir la estructura jerárquica.
+- Ej: montar `/home` en otro disco físico.
+- El punto de montaje reemplaza el directorio vacío existente.
+
+Network File System (NFS)
+--------------------------
+Permite montar sistemas de archivos remotos como si fueran locales.
+
+- El FS remoto se monta sobre el árbol de directorios local.
+- Las aplicaciones acceden a archivos remotos sin saberlo.
+- Requiere el uso de una capa llamada Virtual File System (VFS) en el kernel.
+  - Usa "vnodes" para representar archivos remotos y "inodes" para los locales.
+  - Esta capa decide si redirigir la operación al FS local o remoto.
+
+LVM (Logical Volume Manager)
+----------------------------
+Permite administrar volúmenes lógicos más flexiblemente que las particiones tradicionales.
+
+Ventajas:
+- Redimensionar volúmenes fácilmente.
+- Crear snapshots del estado del sistema o datos.
+- Hacer uso más eficiente del espacio del disco.
+
+Componentes:
+- Physical Volume (PV): Disco o partición física.
+- Volume Group (VG): Agrupación de uno o más PVs.
+- Logical Volume (LV): Volumen lógico creado dentro de un VG.
+
