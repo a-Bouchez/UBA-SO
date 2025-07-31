@@ -1,0 +1,75 @@
+1. Considere el modelo de memoria compartida.
+
+    a) Dé dos primitivas de sincronización.
+    b) Dé implementaciones para cada una de ellas. Explique y justifique todo lo que asuma.
+    c) Explique ventajas y desventajas de cada una.
+
+    a) TAS y semáforos.
+    b) TAS: hace busywaiting hasta que peuda acceder al recurso, se puede hacer con un while condition.
+       Con implementación de semáforo entiendo que se refiere al sem_init y usar wait() y signal().
+    
+    c) Ventajas del TAS: Más rápido si sabemos de ante manos que el recurso se va a liberar en poco tiempo como para que el context swtich del 
+       semáforo sea mayor al tiempo de espera.
+       Desventajas del TAS: Hace busywaiting por lo que si tarda mucho en accerder al recurso se malgasta el CPU.
+
+       lo otro es lo contrario.
+
+2. Definir thrashing y fragmentación
+
+    Cuando tenemos muchos proceso corriendo y poca memoria, el CPU "gasta" más tiempo subiendo y bajando páginas de memoria al dico(swapping) que ejecutando los procesos.
+
+    Framentación es la división de la memroia, puede variar entre:
+
+        - Externa: Tenemos bloques suficientes para almacenar lo pedido en memoria pero no se encuentran contiguos produciendo que no podamos reservar para un proceso.
+        - Interna: Se desperdicia el espacio dentro de los bloques.
+
+    Explique atributos de una página mostrando como funciona
+
+        Atributos de las páginas:
+
+        - Bit de presencia (P): indica si la página está cargada en memoria física o en disco (swappeada).
+
+        - Bit de escritura (W): indica si la página es de solo lectura o si puede escribirse.
+
+        - Bit de usuario/supervisor (U/S): define si puede ser accedida por procesos en modo usuario o solo por el kernel.
+         
+        - Bit de acceso (A): se activa cuando la página fue accedida; útil para algoritmos de reemplazo (ej. LRU).
+         
+        - Bit de dirty (D): indica si la página fue modificada; si está dirty, debe escribirse a disco antes de ser reemplazada.
+         
+        - Bit de compartida (opcional): algunas arquitecturas incluyen un flag que indica si la página puede ser compartida entre procesos.
+
+        - Dirección base del marco (frame number): apunta al marco físico en la RAM donde está la página.
+
+3. Que es una system call y para que sirve?
+    Una system call (llamada al sistema) es una interfaz que proporciona el sistema operativo para que los programas en modo usuario puedan solicitar 
+    servicios del núcleo (kernel). Ya que el kernel opera con privilegios elevados, el acceso a sus servicios debe controlarse cuidadosamente. Por eso 
+    las system calls son el único medio legal para que un programa interactúe con el núcleo.
+
+    la parte de software es hacer el llamado a la syscall y la de HW sería la parte de cambiar a modo kernel. (OJO! no tengo mucha idea a que se refiere).
+
+    explicar detalladamente las los pasos involucrados diferenciando partes de hardware y software.
+    (habia mas items)
+
+
+4. Puede un proceso modificar su PCB?
+
+    Dierectamente, NO. No puede meterse dentro de la estructura que los almacena y modficar su PCB porque está en la memoria del kernel.
+    Puede modificarlo indirectamente ya que el PCB es la estructura donde se guardan todos los datos e información sobre el proceso, si requiere un
+    recurso nuevo este va a ser agregado a su PCB (modificandolo).
+
+    diferencias entre un proceso creado con fork() y un thread
+
+        No tienen nada que ver. Un fork() es una syscall que me permitre crear un hijo con el mismo codigo y estado de ejecución que el padre.
+        Un thread es una unidad de ejecución dentro de un proceso que comparten: recursos, datos y código. Pero tienen su propia pila, registros y PC. 
+    (habia mas items)
+
+
+5. Comparar FAT vs INODOS para la facilidad de hacer un backup total de un disco. Lo mismo para backup incremental.
+    
+    Inodos Para los 2. Para hacer un snapshot usamos inodos de manera que creamos un inodo extra que apuente a los datos de los archivos y, una vez
+    se modifican, creamos una copia de estos datos y mantemos ambas versiones.
+    
+    Para incremental siempre conviene inodos porque la tabla FAT tiene una tamaño determinado.
+
+6. Explicar como funcoina el stack canary para protegerse contra el buffer overflow. Dar desventajas. 

@@ -107,8 +107,5 @@
     Dar dos maneras distintas para que un usuario con acceso al cliente pueda hacerse de la contraseña.
 
     buffer overflow con el strcpy, no se chequea que el argumento pasado sea de 16 bytes así que puedo sobrescribir datos de la pila.
-
-    no veo la segunda. Quien sabe si clase.priv no tiene bien los permisos podemos acceder y leerla.
-
-    qsy tambíen mandale que ele enviar puede no estar cifrado y podemos interceptarlo y ver el token.
+    Podemos pisar la dirección IP del server y poner una arbitraria.
     
