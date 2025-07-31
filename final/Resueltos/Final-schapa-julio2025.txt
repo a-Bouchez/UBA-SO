@@ -136,9 +136,10 @@ Respuestas:
 
     b) Las VMs usan sus propios kernels, sistemas operativos y hay mecanismos de aislamiento de HW para que no usen más de lo que deben.
        Que tengan privilegios máximos en esto es mucho mejor que en contendor ya que el aislamiento de HW les va a dificultar salir.
+       Me parece que es la más segura ya es muy complicado que pueda tomar control del host o del hipervisor.
 
-    c) Si bien está en el sistema real me parece que esta es la menso peligrosa. Al tener privilegios mínimos, no va a poder ni leer ni cambiar mucho por 
-       afuera del proceso (que ya está usando privilegios mínimos por lo que no accede a nada muy importante).
+    c) Estos son como los de las guías, Me parece que es el menos seguro. Como en la guía pueden intentar subir su nivel de privilegios y romper todos
+       Es el menos seguro.
 
 Una clave privada para firmar documentos está en un TEE, hay un proceso para accederlo y el atacante tiene acceso a este proceso.
 Con esto el atacante puede:
