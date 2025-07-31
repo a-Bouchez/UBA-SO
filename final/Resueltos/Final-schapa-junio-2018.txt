@@ -1,0 +1,41 @@
+1. Sincronización: Proponer una primitiva de sincronización para cada caso y justificar:
+
+    Acceso exclusivo a disco
+    Estructura que permite hasta 3 accesos simultáneos
+    Contador que se desea incrementar
+
+2. Procesos: Se poseen dos procesadores y se pueden ver los cambios de estado de los procesos. ¿Qué tendría que ver para que se aumente el rendimiento agregando...
+
+    ...un procesador?
+    ...más memoria?
+
+3. Memoria: Describir los atributos de las páginas y para qué se usan. ¿Es posible que hayan páginas compartidas? ¿En qué caso?
+
+4. Sistemas de archivos: Se desea implementar una funcionalidad de snapshot. ¿Qué sistema de archivos tomaría como base (FAT o inodos) y cómo sería su 
+4. implementación?
+
+-- todo lo mismo que el otro.
+
+5. Seguridad: ¿Qué problemas de seguridad solucionan los stack canaries con respecto al buffer overflow? Indicar desventajas. 
+
+    Stack canaries protegen contra buffer overflows en el stack, donde un atacante intenta sobrescribir la dirección de retorno de una función para
+    redirigir el flujo de ejecución (por ejemplo, saltar a código malicioso).
+
+    El canary es un valor aleatorio secreto insertado entre las variables locales y los metadatos de control (como el return address o el frame pointer).
+
+    Antes de retornar, el programa verifica si el valor del canary fue modificado. Si no coincide, se asume que hubo un overflow y se termina la ejecución
+    del programa (abort), evitando la explotación.
+
+    No detiene todos los tipos de ataques:
+
+        - No protege contra overflows en el heap o en buffers globales.
+
+        - Si el atacante no sobrescribe el canary, el ataque puede pasar desapercibido.
+
+    Puede ser bypassed si:
+
+        - El canary es predecible o filtrado por una vulnerabilidad de info leak.
+
+        - Se logra un overflow parcial que no toca el canary.
+
+    Aumenta ligeramente el tamaño del binario y el tiempo de ejecución (por el chequeo extra antes del ret).

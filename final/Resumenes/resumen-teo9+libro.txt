@@ -1,0 +1,91 @@
+Teórica 9 + Capítulo 7 del libro – Virtualización y contenedores
+
+Virtualización:
+----------------
+Es la capacidad de abstraer un recurso físico (hardware) y presentarlo como uno o más recursos lógicos. Permite ejecutar múltiples entornos de forma aislada sobre una misma máquina física.
+
+Simulación vs Emulación:
+-------------------------
+- **Simulación**: el host mantiene una estructura de estado que representa el sistema huésped y simula sus operaciones una por una. No requiere que el host y el huésped tengan la misma arquitectura.
+- **Emulación**: el hardware del huésped es completamente simulado. Permite correr software compilado para una arquitectura distinta (por ejemplo, emular ARM en x86). Más lento que la virtualización directa.
+
+Virtualización completa:
+--------------------------
+- Emula una máquina completa (CPU, memoria, dispositivos).
+- Permite correr sistemas operativos sin modificación.
+- El software de virtualización se llama **hypervisor** o **VMM (Virtual Machine Monitor)**.
+
+Tipos de Hypervisor:
+---------------------
+- **Tipo 1 (bare-metal)**:
+    - Corre directamente sobre el hardware.
+    - Ejemplos: VMware ESXi, Xen.
+    - Se usa en servidores y entornos productivos.
+- **Tipo 2 (hosted)**:
+    - Corre como una aplicación sobre un SO anfitrión.
+    - Ejemplos: VirtualBox, VMware Workstation.
+    - Ideal para pruebas o entornos de desarrollo.
+
+Requisitos para virtualización eficiente:
+------------------------------------------
+- El CPU debe permitir distinguir entre instrucciones sensibles (que requieren privilegios) e instrucciones privilegiadas (que solo puede ejecutar el kernel).
+- Si hay instrucciones sensibles que no son privilegiadas, no se pueden atrapar, y la virtualización completa no es posible sin modificar el SO huésped o el hardware.
+
+Soluciones:
+-----------
+- **Virtualización asistida por hardware**: extensiones como Intel VT-x o AMD-V permiten interceptar llamadas privilegiadas desde el huésped y pasarlas al VMM.
+- **Paravirtualización**: el sistema operativo huésped está modificado para cooperar con el hipervisor (Xen usa este modelo).
+- **Traducción binaria**: el VMM traduce instrucciones problemáticas antes de ejecutarlas (más costoso en rendimiento).
+
+Virtualización de E/S:
+-----------------------
+- Dispositivos virtuales son emulados por el VMM.
+- El acceso a disco, red y pantalla es interceptado y redirigido.
+- El VMM puede usar controladores propios para mejorar el rendimiento.
+
+Contenedores:
+--------------
+Una alternativa más liviana que las máquinas virtuales. No virtualizan el hardware, sino que aíslan procesos a nivel del sistema operativo.
+
+- Todos los contenedores comparten el mismo kernel.
+- Usan **namespaces** (aislamiento de recursos: PID, red, archivos, etc.).
+- Usan **cgroups** (control de recursos: CPU, memoria, etc.).
+- Son más rápidos de crear, más livianos en uso de memoria y disco.
+
+Ejemplos:
+- Docker, Podman, LXC.
+
+Diferencias entre VMs y contenedores:
+--------------------------------------
+| Recurso             | Máquina Virtual           | Contenedor                   |
+|---------------------|---------------------------|------------------------------|
+| Kernel              | Independiente             | Compartido con el host       |
+| Rendimiento         | Más pesado                | Más eficiente                |
+| Aislamiento         | Completo (incluye kernel) | Parcial (a nivel de proceso) |
+| Inicio              | Lento                     | Muy rápido                   |
+| Uso de recursos     | Mayor                     | Más liviano                  |
+
+Aplicaciones modernas:
+-----------------------
+- **Microservicios**: contenedores permiten desplegar componentes pequeños y escalables.
+- **DevOps y CI/CD**: integración continua con entornos reproducibles.
+- **Cloud computing**: recursos on-demand gracias a la virtualización.
+
+Cloud y virtualización:
+------------------------
+- La nube se apoya en virtualización para ofrecer recursos de manera dinámica y escalable.
+- Modelos de servicio:
+    - IaaS (Infraestructura como servicio): el usuario gestiona el SO. Ej: AWS EC2.
+    - PaaS (Plataforma como servicio): el proveedor gestiona SO y middleware. Ej: Heroku.
+    - SaaS (Software como servicio): el usuario solo accede a la aplicación. Ej: Gmail.
+
+Trusted Execution Environment (TEE):
+-------------------------------------
+- Áreas del procesador seguras, separadas del resto del sistema.
+- Proveen ejecución segura de código y almacenamiento protegido.
+- Ej: Intel SGX, ARM TrustZone.
+- Útiles para proteger claves, certificados, operaciones críticas, etc.
+
+Conclusión:
+------------
+La virtualización ha transformado el diseño de sistemas operativos modernos, permitiendo mayor eficiencia, escalabilidad y seguridad. Los contenedores y la nube representan una evolución del paradigma, centrado en la agilidad y el uso compartido de recursos, mientras que tecnologías como TEE refuerzan la seguridad del entorno de ejecución.

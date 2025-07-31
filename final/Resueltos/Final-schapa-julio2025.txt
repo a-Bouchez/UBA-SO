@@ -1,0 +1,151 @@
+1) Procesos:
+Te dicen que hay una máquina con 5 procesadores sin DMA. Que tengo que ver en el estado del sistema para que mejore el rendimiento agregando: 
+    -Un procesador más.
+    -DMA.
+
+    Para un CPU:
+        Solo mejora el rendimiento si los procesadores actuales están saturados.
+
+        Para eso tenemos que ver que:
+            - Hay muchos procesos en estado READY esperando hacer uso del CPU.
+            - Los 5 procesadores estan siendo constantemente ocupados (cercano al 100% del uso de cada CPU).
+
+        Si pasa lo de arriba agregar un CPU va a mejorar a reducir el tiempo de espera de cada proceso (mejorar el throughput).
+        Si hay mucha E/S bloqueante o los procesos no están en ready no me va a mejorar nada.
+
+    Para DMA:
+        Mejora el rendimiento si:
+            - Hay grandes volúmens de E/S moviendose (pueden ser del disco). 
+            - El CPU está dedicando tiempo a mover los datos entre la memoria y los que los pidan.
+
+        Al no tener DMA al transferencia de datos recae en el CPU ya sea por polling (chequear constantemente si me pideron los datos) o por
+        interrupciones (Activan una interrupción que el CPU atiende).
+
+2) Sincronización:
+En cada caso decidir si están bien utilizadas las primitivas de sincronización y justificar.
+
+    a) Usar un spin lock para hacer acceso exclusivo a disco.
+    b) Usar un semáforo binario para incrementar un contador.
+
+    a)
+    Un spinlock (TAS) garantiza exclusión mutua, pero lo hace con busy waiting, es decir, el proceso espera activamente mientras el recurso está ocupado.
+
+    En el caso del acceso a disco (especialmente si es HDD con alto tiempo de acceso), el tiempo de espera puede ser muy largo.
+
+        - si el disco está atendiendo otra petición y el proceso debe esperar varios milisegundos (latencia física del disco, scheduling tipo elevador).
+
+    Durante ese tiempo, el spinlock mantiene al CPU ocupado sin hacer trabajo útil, lo que degrada el rendimiento.
+
+    En su lugar, es mejor usar un semáforo (binario) que bloquee al proceso y lo pase a estado waiting, liberando el CPU para otros procesos.
+
+    b)
+
+    Depende de si se dispone de operaciones atómicas.
+
+    Si el incremento del contador se puede hacer con una operación atómica como getAndInc(), entonces no es necesario un semáforo. 
+    La operación es indivisible y segura para concurrencia.
+    
+    Si no se dispone de tipos atómicos, entonces sí se requiere una primitiva de sincronización y podríamos usar un semáforo binario o mutex.
+
+3) Memoria:
+Te daban un arbolito de procesos y te mostraba las paginas que tenía mapeadas cada uno, pedía explicar porque motivo ciertas páginas pertenecían a 
+varios procesos.
+    El árbol era algo así:
+    100 -> 101 -> 102
+    100 -> 103
+    Y las páginas eran:
+    100 {A, B, C}
+    101 {A, D, E}
+    102 {F, B, C}
+    103 {A, B, C}
+
+    Se me ocurren 3 razones principales:
+
+        1. Copy-On-Write (COW):
+
+            - Al hacer un fork(), el hijo hereda el espacio de direcciones del padre.
+            - Para optimizar, ambos procesos comparten inicialmente las mismas páginas físicas marcadas como solo lectura.
+            - Si alguno intenta escribir, se produce un page fault, y el SO crea una copia privada de la página.
+
+            Es probable que las páginas A, B y C estén siendo compartidas por COW.
+
+        2. Bibliotecas compartidas (Shared Libraries):
+
+            - Páginas como A pueden contener código de bibliotecas dinámicas (por ejemplo, libc.so), que se cargan solo una vez en memoria.
+            - Estas bibliotecas se mapean en todos los procesos que las usan como read-only, por lo que se pueden compartir sin conflicto.
+            - Esta es otra razón por la cual varios procesos tienen la página A.
+
+
+        3. Memoria compartida explícita (Shared Memory / IPC)
+
+            - El sistema puede permitir regiones de memoria mapeadas explícitamente entre procesos distintos, por ejemplo con shmget() y mmap().
+            - Esto es útil para mecanismos de IPC (Inter-Process Communication).
+            - En este caso, las páginas B o C podrían representar una región compartida usada para comunicarse entre procesos.
+            - En este contexto, es fundamental el uso de sincronización (mutex, semáforos) para evitar condiciones de carrera.
+        
+
+4) Sistema de Archivos:
+Hablaba de un volumen lógico con discos físicos y se quería hacer el funcionamiento de RAID 0+1 y RAID 5. Preguntaba cuantos discos eran necesarios para 
+hacer funcionar cada uno y explicar en palabras cada método y que configuraciones había que hacerles.
+
+RAID 0+1 (Stripping + Mirroring) Es una combinación de RAID 0 y RAID 1:
+
+    Primero se aplica RAID 0: se divide la información en bloques y se escribe en paralelo en múltiples discos (stripping), lo que mejora el 
+    rendimiento de lectura y escritura.
+
+    Luego se aplica RAID 1: se genera una copia espejo exacta de los discos con stripping (mirroring) en otros discos. Mejora la lectura pero la escritura
+    puede llegar a tomar desde el mismo tiempo hasta el doble.
+
+    Configuración mínima:
+
+        - Dos pares de discos: un RAID 0 (mínimo 2 discos) replicado con RAID 1 (otros 2 discos).
+        - En total: 4 discos (mínimo).
+
+RAID 5 (Stripping con paridad distribuida):
+
+    RAID 5 distribuye datos y paridad (información redundante) entre todos los discos del arreglo.
+
+    En cada conjunto de bloques:
+
+        - N-1 discos contienen datos.
+        - 1 disco contiene un bloque de paridad (se rota entre los discos).
+        - La paridad permite reconstruir la información si falla un solo disco.
+
+    Configuración mínima:
+
+        Se necesita al menos 3 discos para implementar RAID 5:
+
+            - 2 para datos.
+
+            - 1 para paridad (la paridad rota, no está fija).
+
+5) Seguridad y Contenedores
+Era marcar la(s) correctas o incorrectas y justificar 
+Ponían contexto de la situación pero te contaban que un atacante tomaba control de un proceso en un sistema mediante un buffer overflow. 
+
+Que es lo menos riesgoso para el sistema:
+
+    a) El proceso corre con max privilegio en un contenedor.
+    b) El proceso corre con max privilegio en VM.
+    c) El proceso corre con min privilegio en el sistema real.
+
+Respuestas: 
+
+    a) Los contenedores usan el mismo kernel que el host, es decir, lo comparten. Que tengan privilegios máximos les puede dejar explotar
+       vunerabilidades del kernel.
+
+    b) Las VMs usan sus propios kernels, sistemas operativos y hay mecanismos de aislamiento de HW para que no usen más de lo que deben.
+       Que tengan privilegios máximos en esto es mucho mejor que en contendor ya que el aislamiento de HW les va a dificultar salir.
+
+    c) Si bien está en el sistema real me parece que esta es la menso peligrosa. Al tener privilegios mínimos, no va a poder ni leer ni cambiar mucho por 
+       afuera del proceso (que ya está usando privilegios mínimos por lo que no accede a nada muy importante).
+
+Una clave privada para firmar documentos está en un TEE, hay un proceso para accederlo y el atacante tiene acceso a este proceso.
+Con esto el atacante puede:
+    -Extraer la clave privada.
+    -Firmar documentos.
+    -Reemplazar la clave privada.
+
+    No puede extraer datos de un TEE, las claves no salen de la TEE. Se le mandan datos para que firme pero la clave nunca la ve el proceso.
+    No puede Reemplazar la clave privida del TEE ya que no va a tener acceso a eso.
+    Si va a poder firmar documentos que es lo que buscaba hacer el proceso. 

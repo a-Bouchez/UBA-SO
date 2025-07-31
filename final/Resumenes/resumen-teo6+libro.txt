@@ -63,10 +63,18 @@ Resumen: Administración de Entrada/Salida
 
 13. Redundancia con RAID:
 - RAID 0: distribución (striping) sin redundancia, mejora rendimiento (guardan un bloque en cada disco).
-- RAID 1: espejo (mirroring), alta redundancia.
-- RAID 0+1: combinación de ambos.
-- RAID 2, 3, 4: usan códigos de detección y corrección.
-- RAID 5: paridad distribuida, tolerancia a la falla de un disco.
+- RAID 1: espejo (mirroring), alta redundancia. Mejora el rendimineto de las lecturas pero las escrituras pueden tardar el doble.
+- RAID 0+1: combinación de ambos. Archivos espejados pero leemos un bloque de cada disco.
+- RAID 2, 3: usan códigos de detección y corrección. 
+    - Raid 2 requiere 3 discos de paridad cada 4 de datos. 
+    - Raid 3 solo uno.
+    - Más lento que Raid 1 porque todos los discos participan de la E/S.
+    - De ahora en más todas usan un controlador adicional.
+- RAID 4: Como Raid 3 pero hace stripping a lvl de bloque (cada bloque en un solo disco).
+- RAID 5: 
+    - Paridad distribuida, distibuye los datos redundantes en N+1 discos (no hay solo un disco que contenga la redundancia).
+    - Para cada bloque, uno de los discos tiene los datos y el otro la información de paridad.
+    - Tolerancia a la falla de un disco.
 - RAID 6: paridad doble, tolera dos fallos.
 
 14. Principios del diseño de E/S (del libro):

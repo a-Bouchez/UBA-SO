@@ -1,0 +1,114 @@
+1. Sincronización: Justificar si la primitiva de sincronización propuesta para cada caso es correcta, y sino cuál usaría y por qué:
+
+    a) Acceso exclusivo a disco utilizando TAS Lock.
+    b) Acceso a una estructura que permite hasta 3 accesos simultáneos con semáforos.
+    c) Acceso a un contador que se desea incrementar mediante un semáforo binario.
+
+    a) TAS Lock es correcto para lograr exclusión mutua, pero no es eficiente en entornos donde los accesos pueden demorar, como el disco. 
+       Como implica espera activa (busy waiting), puede hacer un uso innecesario de CPU. Para este caso, sería preferible un semáforo binario bloqueante,
+       que suspenda el proceso hasta que tenga acceso al recurso.
+
+    b) Está perfecto, usamos un semáforo inicializado en 3 para permitir hasta 3 procesos a la vez.
+
+    c) El semáforo binario garantiza exclusión mutua, pero es innecesario para esta operación si el hardware o lenguaje ofrece operaciones atómicas como
+       fetch-and-increment, atomic_add o getAndInc(). Estas permiten modificar el contador de forma segura sin bloquear el hilo, y sin necesidad de
+       estructuras de sincronización externas. Por tanto, la alternativa más eficiente es usar una variable atómica con operaciones atómicas provistas
+       por el hardware o la biblioteca estándar.
+
+2. Procesos: Se poseen dos procesadores y se pueden ver los cambios de estado de los procesos. ¿Qué tendría que ver para que se aumente el rendimiento?
+
+    a) ...un procesador?
+    b) ...más memoria?
+
+    Ya hay dos procesadores, por lo que agregar más CPU no necesariamente mejora el rendimiento si el cuello de botella está en otro lugar.
+
+    Si observamos que los procesos cambian constantemente entre los estados “waiting”, “ready” y “running”, puede ser indicio de que el sistema está
+    haciendo mucho swapping y no tiene suficiente memoria física para alojar los procesos.
+
+    Esto provoca thrashing: el sistema gasta más tiempo en intercambiar páginas que en ejecutar código útil.
+
+    En ese caso, agregar más memoria RAM ayudaría a reducir el thrashing, mantener más procesos en memoria y así aumentar el rendimiento real del sistema.
+
+3. memoria: Describir los atributos de las páginas y para qué se usan. ¿Es posible que hayan páginas compartidas? ¿En qué caso?
+
+    atributos de las páginas:
+
+        - Bit de presencia (P): indica si la página está cargada en memoria física o en disco (swappeada).
+
+        - Bit de escritura (W): indica si la página es de solo lectura o si puede escribirse.
+
+        - Bit de usuario/supervisor (U/S): define si puede ser accedida por procesos en modo usuario o solo por el kernel.
+         
+        - Bit de acceso (A): se activa cuando la página fue accedida; útil para algoritmos de reemplazo (ej. LRU).
+         
+        - Bit de dirty (D): indica si la página fue modificada; si está dirty, debe escribirse a disco antes de ser reemplazada.
+         
+        - Bit de compartida (opcional): algunas arquitecturas incluyen un flag que indica si la página puede ser compartida entre procesos.
+
+        - Dirección base del marco (frame number): apunta al marco físico en la RAM donde está la página.
+
+    fork() con copy-on-write: inicialmente, padre e hijo comparten las mismas páginas de solo lectura. Si uno escribe, se duplica la página.
+
+    Bibliotecas compartidas (shared libraries): el código de bibliotecas dinámicas (ej: libc) suele estar mapeado en memoria como solo lectura y 
+    compartido por todos los procesos.
+
+    Comunicación entre procesos (IPC): mediante memoria compartida explícita (shmget, mmap, etc.), múltiples procesos acceden a la misma región de memoria.
+
+4. Sistemas de archivos: Se desea implementar una funcionalidad de snapshot. ¿Qué sistema de archivos tomaría como base (FAT o inodos) y cómo sería su implementación?
+
+    Usaría un sistema basado en inodos, ya que ofrece mayor flexibilidad y modularidad para representar archivos y gestionar sus bloques.
+
+    ¿Por qué no FAT?
+
+        En FAT, la estructura de datos principal es una tabla única en la que cada entrada representa el siguiente bloque del archivo.
+
+        Esta tabla es centralizada, lo que hace difícil mantener múltiples versiones coherentes de un mismo archivo.
+
+        Modificar un archivo implica cambiar directamente la FAT, lo cual rompería la consistencia del snapshot.
+
+    ¿Por qué inodos?
+
+        En inodos, cada archivo tiene una estructura independiente que contiene punteros a sus bloques de datos.
+
+        Esto permite mantener múltiples versiones de un archivo al simplemente duplicar el inodo y compartir los bloques de datos (copy-on-write).
+
+        Solo cuando una versión modifica un bloque, se copia ese bloque y se actualiza el puntero del nuevo inodo, dejando el anterior intacto.
+
+    ¿Cómo se podría implementar el snapshot?
+
+        Al hacer un snapshot:
+
+            Se duplican los inodos de los archivos/directorios a preservar.
+
+            Los bloques de datos no se copian, sino que se comparten mientras no haya modificaciones (copy-on-write).
+
+        Si luego se modifica un archivo:
+
+            Se copia únicamente el bloque que va a cambiar.
+
+            El nuevo inodo apunta al nuevo bloque, mientras el anterior sigue apuntando al original.
+
+        El snapshot puede mantenerse en una estructura aparte (como un árbol de directorios en /snapshots/fecha/), apuntando a los inodos congelados.
+
+5. Seguridad: Se posee el siguiente cliente escrito en C que utiliza encripción asimétrica para enviar la contraseña del usuario ingresado a un servidor. Se ingresa el nombre de usuario por parámetro, el cual se copia a un buffer de tamaño fijo, y luego se obtiene la contraseña escrito en texto plano de la DB. Esta misma es encriptada y enviada.
+
+    int main(int args, char* argv[]){
+        char[16] usuario;
+        char path_clave_priv[] = "/etc/clave.priv";
+        char ip_servidor = "192.168.1.1";
+        char* contrasena;
+
+        strcpy(argv[1], usuario);
+        contrasena = obtener_contrasena_db(usuario);
+        token = encriptar(path_clave_priv, usuario, contrasena);
+        enviar(token, ip_servidor);
+    }
+    
+    Dar dos maneras distintas para que un usuario con acceso al cliente pueda hacerse de la contraseña.
+
+    buffer overflow con el strcpy, no se chequea que el argumento pasado sea de 16 bytes así que puedo sobrescribir datos de la pila.
+
+    no veo la segunda. Quien sabe si clase.priv no tiene bien los permisos podemos acceder y leerla.
+
+    qsy tambíen mandale que ele enviar puede no estar cifrado y podemos interceptarlo y ver el token.
+    
