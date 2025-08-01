@@ -73,7 +73,7 @@ varios procesos.
 
             - Páginas como A pueden contener código de bibliotecas dinámicas (por ejemplo, libc.so), que se cargan solo una vez en memoria.
             - Estas bibliotecas se mapean en todos los procesos que las usan como read-only, por lo que se pueden compartir sin conflicto.
-            - Esta es otra razón por la cual varios procesos tienen la página A.
+            - Esta es otra razón por la cual varios procesos pueden tener la página A.
 
 
         3. Memoria compartida explícita (Shared Memory / IPC)
@@ -117,7 +117,7 @@ RAID 5 (Stripping con paridad distribuida):
 
             - 2 para datos.
 
-            - 1 para paridad (la paridad rota, no está fija).
+            - 1 para paridad (la paridad rota, no está fija pero se entiende).
 
 5) Seguridad y Contenedores
 Era marcar la(s) correctas o incorrectas y justificar 
@@ -150,3 +150,5 @@ Con esto el atacante puede:
     No puede extraer datos de un TEE, las claves no salen de la TEE. Se le mandan datos para que firme pero la clave nunca la ve el proceso.
     No puede Reemplazar la clave privida del TEE ya que no va a tener acceso a eso.
     Si va a poder firmar documentos que es lo que buscaba hacer el proceso. 
+
+    TODO magia este punto. Lo hice sin mucha idea. La primer parte la compro, pero la segunda mmmmmmmm.
