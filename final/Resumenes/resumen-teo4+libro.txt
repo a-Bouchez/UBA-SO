@@ -91,7 +91,10 @@ Locks avanzados:
 ----------------
 1. **TTAS (Test-Test-And-Set)**:
    - Reduce tráfico de memoria compartida.
-   - Espera leyendo hasta que el lock está libre, y sólo entonces hace el `testAndSet()`.
+   - La idea es probar antes de mandarse con el TAS().
+   - Hace local spinning, el while hace get() y lee un cache mientras espera en vezde hacer testAndSet().
+      - Cuando hacen unlock() hay cache miss.
+   - En un solo procesador es lo mismo pero en multiprocesador como se queda leyendo una cache sin interrumpir al resto o el bus de datos. 
 
 2. **Compare-and-Swap (CAS)**:
    - Reemplaza un valor sólo si sigue siendo igual al esperado.

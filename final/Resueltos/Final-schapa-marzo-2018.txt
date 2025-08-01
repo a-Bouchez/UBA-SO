@@ -66,10 +66,17 @@
 
 
 5. Comparar FAT vs INODOS para la facilidad de hacer un backup total de un disco. Lo mismo para backup incremental.
+
+    Para hacer un backup total del disco convine FAT ya que podemos ver todos los bloques en uso por cada archivo desde la tabla. En inodos tendríamos
+    que recorrer cada uno de ellos lo que puede ser más costoso.
+
+    FAT es más simple y eficiente para un backup total, porque basta con copiar una tabla más los bloques. 
+    Con inodos hay más dispersión y más estructuras que recorrer.
     
-    Inodos Para los 2. Para hacer un snapshot usamos inodos de manera que creamos un inodo extra que apuente a los datos de los archivos y, una vez
-    se modifican, creamos una copia de estos datos y mantemos ambas versiones.
-    
-    Para incremental siempre conviene inodos porque la tabla FAT tiene una tamaño determinado.
+    Para incremental siempre conviene inodos sobre FAT Ya que al ser una tabla, FAT, tiene una tamaño determinado mientras que podemos crear los inodos
+    que veamos necesarios. Además la metadata de los inodos nos permiten ver el timestamp de modifcación para chequear cuales fueron los archivos
+    modificados, en Fat tendríamos que ver todos.
 
 6. Explicar como funcoina el stack canary para protegerse contra el buffer overflow. Dar desventajas. 
+
+    -- ya lo respondí en otro final.
