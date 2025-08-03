@@ -93,7 +93,7 @@ RAID 0+1 (Stripping + Mirroring) Es una combinación de RAID 0 y RAID 1:
     Primero se aplica RAID 0: se divide la información en bloques y se escribe en paralelo en múltiples discos (stripping), lo que mejora el 
     rendimiento de lectura y escritura.
 
-    Luego se aplica RAID 1: se genera una copia espejo exacta de los discos con stripping (mirroring) en otros discos. Mejora la lectura pero la escritura
+    Luego se aplica RAID 1: se genera una copia espejo exacta de los discos (mirroring) en otros discos. Mejora la lectura pero la escritura
     puede llegar a tomar desde el mismo tiempo hasta el doble.
 
     Configuración mínima:
