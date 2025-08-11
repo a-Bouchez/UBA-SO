@@ -1,0 +1,1 @@
+[Link](https://youtu.be/757IZlGrDrg) a la clase que subió Schpa.
